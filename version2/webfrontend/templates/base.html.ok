@@ -1,0 +1,9 @@
+$def with (content)
+<html>
+<head>
+    <title>Foo</title>
+</head>
+<body>
+$:content
+</body>
+</html>

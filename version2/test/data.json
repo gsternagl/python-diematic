@@ -1,0 +1,16 @@
+{
+        "maps": [
+            {
+                "id1": "blabla",
+                "iscategorical": "0"
+            },
+            {
+                "id2": "blabla",
+                "iscategorical": "0"
+            }
+        ],
+        "masks": [{
+            "id": "valore"
+        }],
+        "om_points": "value"
+}

@@ -1,0 +1,13 @@
+{
+    "register": {
+        "reg_content": {
+            "reg_set": "None", 
+            "reg_min": "10.0", 
+            "reg_value": "45.0", 
+            "reg_max": "80.0", 
+            "reg_addr": "59", 
+            "reg_type": "2"
+        }, 
+        "reg_name": "CONS_ECS"
+    }
+}

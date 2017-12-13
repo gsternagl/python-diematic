@@ -1,0 +1,70 @@
+$def with (regs)
+
+<html>
+  <head>
+    <title>Diematic III Parameters Web Form</title>
+<!--	<link rel="stylesheet" href="static/styles.css" type="text/css"> -->
+  </head>
+<body>
+
+<h1>Diematic III Parameters</h1>
+$code:
+  REG_VAL=4
+  days=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  weekday=days[((regs['WEEKDAY'][REG_VAL] - 1) % 7)]
+  date = '%d.%d.%d' %  (regs['DAY'][REG_VAL], regs['MONTH'][REG_VAL], regs['YEAR'][REG_VAL])
+  time = '%02d:%02d' % (regs['HOUR'][REG_VAL], regs['MINUTE'][REG_VAL])
+<form action="/param" method="POST">
+<table>
+  <tr><td>Diematic-Date</td><td>$weekday $date</td></tr>
+  <tr><td>Diematic-Time</td><td>$time</td></tr>
+  <tr><td colspan="4"><div style="text-align:left"><input type="submit" name="submit" class="btn btn-info" value="Set Time"></div></td></tr>
+  <tr><td colspan="2"><b>Circuit A (Radiator)</b></td><td colspan="2"><b>Circuit B (Floor Heating)</b></td></tr>
+  <tr>
+    <td>Temp Day</td><td><input type="text" name="cons_day_a" maxlength="4" size="4" value=$regs['CONS_DAY_A'][REG_VAL]> °C</td>
+    <td>Temp Day</td><td><input type="text" name="cons_day_b" maxlength="4" size="4" value=$regs['CONS_DAY_B'][REG_VAL]> °C</td>
+  </tr>
+  <tr>
+    <td>Temp Night</td><td><input type="text" name="cons_night_a" maxlength="4" size="4" value=$regs['CONS_NIGHT_A'][REG_VAL]> °C</td>
+    <td>Temp Night</td><td><input type="text" name="cons_night_b" maxlength="4" size="4" value=$regs['CONS_NIGHT_B'][REG_VAL]> °C</td>
+  </tr>
+  <tr>
+    <td>Temp Anti-Ice</td><td><input type="text" name="cons_antiice_a" maxlength="4" size="4" value=$regs['CONS_ANTIICE_A'][REG_VAL]> °C</td>
+    <td>Temp Anti-Ice</td><td><input type="text" name="cons_antiice_b" maxlength="4" size="4" value=$regs['CONS_ANTIICE_B'][REG_VAL]> °C</td>
+  </tr>
+  <tr>
+       <td colspan="4"><div style="text-align:left"><input type="submit" name="submit" class="btn btn-info" value="Confirm Temp"></div></td>
+  </tr>
+  <tr><td colspan="4"><b>Heating Curve Steepness</b></td></tr>
+  <tr>
+     <td colspan="2"><img src="../static/Heizungskurve1.jpg"></img></td>
+     <td colspan="2"><img src="../static/Heizungskurve2.jpg"></img></td>
+  </tr>
+  <tr>
+     <td>Steepness Factor A</td><td><input type="text" name="steepness_a" maxlength="4" size="4" value=$regs['STEEPNESS_A'][REG_VAL]></td>
+     <td>Steepness Factor B</td><td><input type="text" name="steepness_b" maxlength="4" size="4" value=$regs['STEEPNESS_B'][REG_VAL]></td>
+  </tr>
+  <tr>
+      <td colspan="4"><div style="text-align:left"><input type="submit" name="submit" class="btn btn-info" value="Confirm Steepness"></div></td>
+  </tr>
+  <tr><td colspan="2"><b>Summer/Winter Auto Temp</b></td></tr>
+  <tr>
+      <td>Temp Sum/Win</td><td><input type="text" name="cons_sumwin" maxlength="4" size="4" value=$regs['CONS_SUMWIN'][REG_VAL]> °C</td>
+  </tr>
+  <tr>
+      <td colspan="2"><div style="text-align:left"><input type="submit" name="submit" class="btn btn-info" value="Confirm Sum/Win Temp"></div></td>
+  </tr>
+  <tr><td colspan="2"><b>Warmwater</b></td></tr>
+  <tr><td>Temp Day</td><td><input type="text" name="cons_ecs" maxlength="4" size="4" value=$regs['CONS_ECS'][REG_VAL]> °C</td></tr>
+  <tr><td>Temp Night</td><td><input type="text" name="cons_ecs_night" maxlength="4" size="4" value=$regs['CONS_ECS_NIGHT'][REG_VAL]> °C</td></tr>
+  <tr><td>CTRL (Version Soft)</td><td>$regs['CTRL'][REG_VAL]</td></tr>
+  <tr>
+     <td><div style="text-align:left"><input type="submit" name="submit" class="btn btn-primary" value="Refresh"></div></td>
+     <td><div style="text-align:left"><input type="submit" name="submit" class="btn btn-info" value="Confirm WW Temp"></div></td>
+  </tr>
+</table> 
+
+</form>
+<p><a href="/controller">Controller</a></p>
+</body>
+</html>
