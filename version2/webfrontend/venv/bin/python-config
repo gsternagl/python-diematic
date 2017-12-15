@@ -1,4 +1,4 @@
-#!/Users/gsternag/Source/python/diematic/webfrontend/venv/bin/python
+#!/Users/gsternag/Source/python/diematic/version2/webfrontend/venv/bin/python
 
 import sys
 import getopt

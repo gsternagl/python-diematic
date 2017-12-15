@@ -31,8 +31,11 @@ def create_json(reg, arg):
             if arg is None:
                 s = json.dumps(reg, indent = 4)
             else:
-                s = json.dumps({ idx: reg[idx] }, indent = 4)
-        except:
+                s = json.dumps({ arg: reg[arg] }, indent = 4)
+        except Exception as inst:
+            print type(inst)
+            print inst.args
+            print inst
             s = json.dumps({'ERROR': 2})
     return s
     
@@ -80,7 +83,7 @@ def dump_registers():
     return s
 
 # GET, PUT, POST one register in JSON
-@app.route('/registers/<string:reg>', methods=['GET', 'PUT', 'POST'])
+@app.route('/registers/<string:reg>', methods=['GET','PUT','POST'])
 def dump_register(reg):
     global regs
     found = False
@@ -143,7 +146,7 @@ def create_app():
             with dataLock:
                 copy_regs(regulator.diematicReg, regs)
 
-        updaterThread = threading.Timer(UPDT_TIME, dataProducer, ())
+        updaterThread = threading.Timer(10, dataProducer, ())
         updaterThread.start()
 
     def dataProducer_start():
