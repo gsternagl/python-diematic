@@ -1,0 +1,54 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/fixes.html" as fixes %}
+{% import "bootstrap/utils.html" as util %}
+
+{% block title %}Diematic III{% endblock %}
+
+
+{% macro render_field(field) %}
+<td>{{ field.label }}</td>
+<td>
+{% if field.errors %}
+  <strong>
+	<span style="color: red">{{ field(**kwargs)|safe }}</span>
+  </strong>
+{% else %}
+  {{ field(**kwargs)|safe }}
+{% endif %}
+</td>
+{% endmacro %}
+
+{% block navbar %}
+  {% if user is defined %}
+  <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	<div class="container">
+	  <div class="navbar-header">
+		<a class="navbar-brand" href="#">
+		  <img src="/static/diematic-logo-big.png" style="height:32px;margin-top:-4px;">
+		</a>
+	  </div>
+	  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		<ul class="nav navbar-nav">
+		  <li>
+			<a href="{{ url_for('controller')}}" data-toggle="modal">Controller</a>
+		  </li>
+		  <li>
+			<a href="{{ url_for('parameters')}}" data-toggle="modal">Parameters</a>
+		  </li>
+		  <li>
+			<a href="{{ url_for('charts')}}" data-toggle="modal">Charts</a>
+		  </li>
+		</ul>
+		<span class="navbar-text navbar-right">
+		  <font color="white">user: {{ user.username }}</font>
+		  <a href="{{ url_for('logout')}}" data-toggle="modal"> (logout)</a>
+		  <a href="{{ url_for('settings')}}">
+			<img id="settings" src={{ url_for('static', filename='settings.png')}} width="24" height="24" />
+		  </a>
+		</span>
+	  </div>
+	</div>
+  </nav>
+  {% endif %}
+{% endblock %}

@@ -1,13 +1,27 @@
+#  diematicd.py
+#
+#  Daemon for Diematic III maintenance which speaks JSON
+#  data requests:
+#   
+#   GET:
+#   1. All registers:
+#       curl http://127.0.0.1:5000/registers
+#   2. One register:
+#       curl http://127.0.0.1:5000/registers/TEMP_EXT
+#
+#   PUT:
+#   1. Only one register can be updated at a time:
+#   curl http://127.0.0.1:5000/registers/TEMP_ECS -H 'Content-Type: application/json' -X POST -d '{ \"TEMP_ECS\": [ 45.0 ] }'
+#
 import threading
 import time
 import json
 import atexit
 from flask import Flask, request
-from flask_restful import Resource, Api
 from Diematic import Diematic
 
 regs = {}
-UPDT_TIME = 30
+UPDT_TIME = 30      # intervals when to update diematic registers
 
 # get a lock to prevent concurrent access to data
 dataLock = threading.Lock()
@@ -45,8 +59,11 @@ def copy_regs(reg1, reg2):
 
 def update_reg(reg, val):
     global regs
+    global dataLock
 
-    regs[reg][Diematic.REG_SET] = val
+    with dataLock:
+        regs[reg][Diematic.REG_SET] = val
+        regs[reg][Diematic.REG_VAL] = val
 
 def check_data(reg, data):
     global regs
@@ -101,11 +118,12 @@ def dump_register(reg):
                 data = request.get_json()
                 data_ok, val = check_data(reg, data)
                 if data_ok:
-                    if regs[reg][Diematic.REG_MOD]:
+                    # check whether register can be modified
+                    if regs[reg][Diematic.REG_MOD]: 
                         update_reg(reg, val)
-                        return "OK"
+                        return "Register update OK"
                     else:
-                        return "Not a writable Diematic Register"
+                        return "Attempt to change non-writable Diematic Register"
                 else:
                     return "Data received not OK!"
             else:
@@ -169,4 +187,4 @@ regulator = Diematic(connection, debug=False)
 copy_regs(regulator.diematicReg, regs)
 
 app = create_app()
-app.run(debug=True)
+app.run(debug=True, host='0.0.0.0', port=5000)

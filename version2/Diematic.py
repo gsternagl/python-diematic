@@ -47,7 +47,6 @@ class Diematic:
 
   #                             set,  addr, type,    modify, value, min, max,
   diematicReg = { \
-    	'CTRL': 		[None, 3,   INTEGER,  False, 0, 0, 9999], \
      	'HOUR':			[None, 4,   INTEGER,  True,  0, 0, 23], \
     	'MINUTE':		[None, 5,   INTEGER,  True,  0, 0, 59], \
     	'WEEKDAY':		[None, 6,   INTEGER,  True,  0, 1, 7], \
@@ -58,15 +57,15 @@ class Diematic:
     	'CONS_NIGHT_A':   	[None, 15,  REAL10,   True,  0.0, 5.0,  30.0], \
     	'CONS_ANTIICE_A': 	[None, 16,  REAL10,   True,  0.0, 0.5,  20.0], \
     	'MODE_A':         	[None, 17,  BIT,      True,  0x0, 0, 255], \
-    	'TEMP_AMB_A':     	[None, 18,  REAL10,   False, 0.0, 0, 40.0], \
     	'STEEPNESS_A':     	[None, 20,  REAL10,   True,  0.0, 0.0, 4.0], \
-    	'TCALC_A':        	[None, 21,  REAL10,   False, 0.0, 0, 0], \
     	'CONS_DAY_B':     	[None, 23,  REAL10,   True,  0.0, 10.0, 30.0], \
     	'CONS_NIGHT_B':   	[None, 24,  REAL10,   True,  0.0, 5.0, 30.0], \
     	'CONS_ANTIICE_B': 	[None, 25,  REAL10,   True,  0.0, 0.5, 20.0], \
     	'STEEPNESS_B': 	        [None, 29,  REAL10,   True,  0.0, 0.0, 4.0], \
-    	'CONS_ECS':       	[None, 59,  REAL10,   True,  0.0, 10.0, 80.0], \
+    	'CONS_ECS_DAY':       	[None, 59,  REAL10,   True,  0.0, 10.0, 80.0], \
     	'TEMP_ECS':       	[None, 62,  REAL10,   False, 0.0, 0.0,  150.0], \
+        'MIN_BOILER':           [None, 70,  REAL10,   True,  0.0, 30.0, 50.0], \
+        'MAX_BOILER':           [None, 71,  REAL10,   True,  0.0, 50.0, 95.0], \
         'CONS_BOILER':          [None, 74,  REAL10,   False, 0.0, 0.0, 0.0], \
     	'TEMP_BOILER':      	[None, 75,  REAL10,   False, 0.0, 0.0, 150.0], \
     	'BASE_ECS':       	[None, 89,  BIT,      False, 0x0, 0, 0], \
@@ -74,7 +73,6 @@ class Diematic:
     	'DAY':            	[None, 108, INTEGER,  True,  0, 1, 31], \
     	'MONTH':          	[None, 109, INTEGER,  True,  0, 1, 12], \
     	'YEAR':           	[None, 110, INTEGER,  True,  0, 0, 99], \
-    	'WATER_PRESSURE': 	[None, 456, REAL10,   False, 0.0, 0.0, 100.0], \
     	'ALARM':          	[None, 465, BIT,      False, 0x0, 0, 0] }
 
 
@@ -107,7 +105,7 @@ class Diematic:
 
         if reg_addr == key:
           if reg_type == self.REAL10:
-            reg_value = value * 0.1
+            reg_value = float(value * 0.1)
           elif reg_type == self.INTEGER:
             reg_value = value
           elif reg_type == self.BIT:
@@ -276,14 +274,14 @@ class Diematic:
       register = {}
 
     # transmit ECS/warmwater temperature setting
-    if self.reg_isset(self.diematicReg, 'CONS_ECS'):
-      register = { 0: self.diematicReg['CONS_ECS'] }
+    if self.reg_isset(self.diematicReg, 'CONS_ECS_DAY'):
+      register = { 0: self.diematicReg['CONS_ECS_DAY'] }
 
       self.modBus.masterTx(self.regulatorAddress, register)
 
       if self.debug:
 	self.logger.log(self.modBus.log)
-      self.reg_unset(self.diematicReg, 'CONS_ECS')
+      self.reg_unset(self.diematicReg, 'CONS_ECS_DAY')
       register = {}
 
     # transmit ECS/warmwater night temperature setting
@@ -433,7 +431,7 @@ class Diematic:
     self.reg_set(self.diematicReg, 'CONS_ANTIICE_B', (min(max(int(2 * antiIce)* 5, 5),   200)))
 
   def setEcsTemp(self, day, night):
-    self.reg_set(self.diematicReg, 'CONS_ECS',       (min(max(int(day/5)   * 50, 400), 800)))
+    self.reg_set(self.diematicReg, 'CONS_ECS_DAY',   (min(max(int(day/5)   * 50, 400), 800)))
     self.reg_set(self.diematicReg, 'CONS_ECS_NIGHT', (min(max(int(night/5) * 50, 100), 800)))
   
   def setSteepness(self, steepness_a, steepness_b):

@@ -1,0 +1,10 @@
+[Unit]
+Description=Diematic Daemon
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /root/src/python/diematic/diematicd/diematicd.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+DAY				ctrl_date
+MONTH			ctrl_date
+YEAR			ctrl_date
+HOUR			ctrl_time
+MINUTE			ctrl_time
+WEEKDAY			ctrl_weekday
+CONS_DAY_A		temp_day_a
+CONS_NIGHT_A	temp_night_a
+CONS_ANTIICE_A	temp_antiice_a
+STEEPNESS_A		steepness_a
+CONS_DAY_B		temp_day_b
+CONS_NIGHT_B	temp_night_b
+CONS_ANTIICE_B	temp_antiice_b
+STEEPNESS_B		steepness_b
+TEMP_EXT		temp_outside
+TEMP_ECS		temp_ecs_meas
+BASE_ECS		mode_ecs,mode_heating
+CONS_ECS_DAY	temp_ecs_day
+CONS_ECS_NIGHT	temp_ecs_night
+CONS_SUMWIN		temp_sum_win
+MODE_A
+CONS_BOILER		temp_boiler_calc
+TEMP_BOILER		temp_boiler_meas
+MIN_BOILER		temp_boiler_min
+MAX_BOILER		temp_boiler_max

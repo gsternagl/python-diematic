@@ -1,8 +1,8 @@
-from Diematic1 import Diematic
+from Diematic import Diematic
 
 def print_r(regs):
   for idx in regs:
-    print "Reg[" + idx + "] => " + str(regs[idx][3])
+    print "Reg[" + idx + "] => " + str(regs[idx][Diematic.REG_VAL])
 
     
 if __name__ == '__main__':

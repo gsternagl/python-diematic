@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block head %}
+	{{ super() }}
+	<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+	<link href="/static/signin.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+  <form class="form-signin text-center" action="/login" method="post">
+	<img class="mb-4" src="/static/head.png" alt="" width="72" height="72">
+	<h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+	<label for="username" class="sr-only">Email address</label>
+	{{ form.username(type="username",placeholder="user name",class="form-control") }}
+    <label for="password" class="sr-only">Password</label>
+    {{ form.password(type="password", placeholder="password",class="form-control") }}
+	{{ form.hidden_tag() }}
+	<br>
+	<br>
+	<input class="btn btn-lg btn-primary btn-block" type="submit" value="Login">
+	<a href="{{ url_for('register')}}">Register</a>
+  </form>
+{% endblock %}

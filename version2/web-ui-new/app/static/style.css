@@ -1,0 +1,12 @@
+body {
+    padding-top: 70px;
+    /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+}
+input {
+    -webkit-border-radius: 4px;
+       -moz-border-radius: 4px;
+            border-radius: 4px;
+           -webkit-border: 1px solid #ccc;
+              -moz-border: 1px solid #ccc;
+                   border: 1px solid #ccc;
+}

@@ -56,8 +56,10 @@ class Diematic:
     	'CONS_NIGHT_B':   	(None, 24,  REAL10,   0.0), \
     	'CONS_ANTIICE_B': 	(None, 25,  REAL10,   0.0), \
     	'STEEPNESS_B': 	        (None, 29,  REAL10,   0.0), \
-    	'CONS_ECS':       	(None, 59,  REAL10,   0.0), \
+    	'CONS_ECS_DAY':       	(None, 59,  REAL10,   0.0), \
     	'TEMP_ECS':       	(None, 62,  REAL10,   0.0), \
+        'MIN_BOILER':           (None, 70,  REAL10,   0.0), \
+        'MAX_BOILER':           (None, 71,  REAL10,   0.0), \
         'CONS_BOILER':          (None, 74,  REAL10,   0.0), \
     	'TEMP_BOILER':      	(None, 75,  REAL10,   0.0), \
     	'BASE_ECS':       	(None, 89,  BIT,      0x0), \
@@ -204,12 +206,12 @@ class Diematic:
       register = {}
 
     # ECS temperature setting
-    if self.reg_isset(self.diematicReg, 'CONS_ECS'):
-      register = { 0: self.diematicReg['CONS_ECS'] }
+    if self.reg_isset(self.diematicReg, 'CONS_ECS_DAY'):
+      register = { 0: self.diematicReg['CONS_ECS_DAY'] }
       self.modBus.masterTx(self.regulatorAddress, register)
       if self.debug:
 	self.logger.log(self.modBus.log)
-      self.reg_unset(self.diematicReg, 'CONS_ECS')
+      self.reg_unset(self.diematicReg, 'CONS_ECS_DAY')
       register = {}
 
     # ECS night temperature setting
@@ -355,7 +357,7 @@ class Diematic:
     self.reg_set(self.diematicReg, 'CONS_ANTIICE_B', (min(max(int(2 * antiIce)* 5, 5),   200)))
 
   def setEcsTemp(self, day, night):
-    self.reg_set(self.diematicReg, 'CONS_ECS',       (min(max(int(day/5)   * 50, 400), 800)))
+    self.reg_set(self.diematicReg, 'CONS_ECS_DAY',   (min(max(int(day/5)   * 50, 400), 800)))
     self.reg_set(self.diematicReg, 'CONS_ECS_NIGHT', (min(max(int(night/5) * 50, 100), 800)))
   
   def setSteepness(self, steepness_a, steepness_b):
