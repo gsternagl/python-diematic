@@ -1,6 +1,6 @@
 # python-diematic
 
-Version: 2.0alpha Dec-2017
+Version: 2.0beta Feb-2018
 
 # Goal: enable internet connectivity for older RS485-based DeDietrich Diematic 3 Heating controllers.
 
@@ -28,4 +28,6 @@ For further details look at the README.md file in the version1 directory
 
 Version2: 
 I have recently started to work on a new app-architecture where the communication module runs separately as a daemon and the webui is another process, potentially on any other machine. The moduls talk to each other via Rest API with JSON as a data format. I have used the Flask framework for the Rest API and am currently working to change the existing WebUI from using the web.py framework towards also using Flask instead. This makes it easier for me to maintain.
+
+See in version2/README.md for more information.
 
