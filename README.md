@@ -21,12 +21,12 @@ The Diematic has a range of Modbus registers which slightly differ from model to
 
 For testing I recommend to stick to the CLI version or to start the web.py interface from command-line and then use the webbrowser for the GUI. For "production" I recommend to setup a simple web-server which starts the web.py main application.
 
-Version1:
+# Version1:
 This is what I am currently using "in production" and it should be fully functional. This version consists only of one module which is the web.py based Webgui. All communication to the Diematic Controller is triggered by calling methods of the Diematic class from bin/app.py which is the main web.py application.
 
 For further details look at the README.md file in the version1 directory
 
-Version2: 
+# Version2: 
 I have recently started to work on a new app-architecture where the communication module runs separately as a daemon and the webui is another process, potentially on any other machine. The moduls talk to each other via Rest API with JSON as a data format. I have used the Flask framework for the Rest API and am currently working to change the existing WebUI from using the web.py framework towards also using Flask instead. This makes it easier for me to maintain.
 
 See in version2/README.md for more information.
