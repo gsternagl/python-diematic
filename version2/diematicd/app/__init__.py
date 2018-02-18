@@ -1,18 +1,23 @@
-#  diematicd.py
-#
-#  Daemon for Diematic III maintenance which speaks JSON
-#  data requests:
-#   
-#   GET:
-#   1. All registers:
-#       curl http://127.0.0.1:5000/registers
-#   2. One register:
-#       curl http://127.0.0.1:5000/registers/TEMP_EXT
-#
-#   PUT:
-#   1. Only one register can be updated at a time:
-#   curl http://127.0.0.1:5000/registers/TEMP_ECS -H 'Content-Type: application/json' -X POST -d '{ \"TEMP_ECS\": [ 45.0 ] }'
-#
+#!/usr/bin/python
+#-*- coding: utf-8 -*-
+"""  __init__.py
+
+     Daemon for Diematic III maintenance which speaks JSON
+     data requests:
+
+     GET:
+     1. All registers:
+         curl http://127.0.0.1:5000/registers
+     2. One register:
+         curl http://127.0.0.1:5000/registers/TEMP_EXT
+
+     PUT:
+     1. Only one register can be updated at a time:
+     curl http://127.0.0.1:5000/registers/TEMP_ECS -H \
+        'Content-Type: application/json' \
+        -X POST -d '{ \"TEMP_ECS\": [ 45.0 ] }'
+"""
+
 import threading
 import time
 import json
@@ -28,10 +33,10 @@ regs = {}
 UPDT_TIME = 30      # intervals when to update diematic registers
 
 # get a lock to prevent concurrent access to data
-dataLock = threading.Lock()
+data_lock = threading.Lock()
 
 # thread handler
-updaterThread = threading.Thread()
+updater_thread = threading.Thread()
 
 # Flask main class
 app = Flask(__name__)
@@ -39,43 +44,50 @@ app.config.from_object('config')
 
 app.config['PROPAGATE_EXCEPTIONS'] = False
 
-# write Diematic registers into a string in JSON-format
-# if arg = <None> then dump all registers
-# otherwise just dump one register with the name = <arg>
 
+""" write Diematic registers into a string in JSON-format
+    if arg = <None> then dump all registers
+    otherwise just dump one register with the name = <arg>.
+"""
 def create_json(reg, arg):
-    s = ''
+    buff = ''
 
     if reg is not None:
         try:
             if arg is None:
-                s = json.dumps(reg, indent = 4)
+                buff = json.dumps(reg, indent=4)
             else:
-                s = json.dumps({ arg: reg[arg] }, indent = 4)
+                buff = json.dumps({arg: reg[arg]}, indent=4)
         except Exception as inst:
             print type(inst)
             print inst.args
             print inst
-            s = json.dumps({'ERROR': 2})
-    return s
-    
+            buff = json.dumps({'ERROR': 2})
+    return buff
+
+
+""" copy registers from downstream to upstream.
+"""
 def copy_regs(reg1, reg2):
-  for idx in reg1:
-    reg2.update( { idx: reg1[idx] } )
+    for idx in reg1:
+        reg2.update({idx: reg1[idx]})
+
 
 def update_reg(reg, val):
     global regs
-    global dataLock
+    global data_lock
 
-    with dataLock:
+    with data_lock:
         regs[reg][Diematic.REG_SET] = val
         regs[reg][Diematic.REG_VAL] = val
+
 
 def check_data(reg, data):
     global regs
     data_ok = False
     reg_match = False
     val = None
+    idx1 = None
 
     if data is not None and data != {}:
         for idx1 in data:
@@ -91,7 +103,7 @@ def check_data(reg, data):
             if reg_match:
                 break
         if reg_match:
-            if len(data[idx1]) > 0:
+            if data[idx1]:
                 val = data[idx1][0]
                 data_ok = True
     return data_ok, val
@@ -101,57 +113,59 @@ def check_data(reg, data):
 @app.route('/registers', methods=['GET'])
 def dump_registers():
     global regs
-    
-    s = create_json(regs, None)
-    return s
+
+    buff = create_json(regs, None)
+    return buff
+
 
 # GET, PUT, POST one register in JSON
-@app.route('/registers/<string:reg>', methods=['GET','PUT','POST'])
+@app.route('/registers/<string:reg>', methods=['GET', 'PUT', 'POST'])
 def dump_register(reg):
     global regs
     found = False
 
-    s = ""
+    buff = ""
     for idx in regs:
         if idx == reg:
             found = True
             break
     if found:
         if request.method == 'GET':
-            s = create_json(regs, reg)
+            buff = create_json(regs, reg)
         else:
             if request.headers['Content-Type'] == 'application/json':
                 data = request.get_json()
                 data_ok, val = check_data(reg, data)
                 if data_ok:
                     # check whether register can be modified
-                    if regs[reg][Diematic.REG_MOD]: 
+                    if regs[reg][Diematic.REG_MOD]:
                         update_reg(reg, val)
                         return "Register update OK"
-                    else:
-                        return "Attempt to change non-writable Diematic Register"
-                else:
-                    return "Data received not OK!"
-            else:
-                return "415 Unsupported Media Type"
+                    return "Attempt to change non-writable Diematic Register"
+
+                return "Data received not OK!"
+
+            return "415 Unsupported Media Type"
     else:
-        s = 'register <' + reg + '> doesn\'t exist'
-    return s
+        buff = 'register <' + reg + '> doesn\'t exist'
+    return buff
+
 
 def create_app():
 
     def interrupt():
-        global updaterThread
-        updaterThread.cancel()
-        
-    def dataProducer():
-        global updaterThread
-        global dataLock
+        global updater_thread
+        updater_thread.cancel()
+
+
+    def data_producer():
+        global updater_thread
+        global data_lock
         global regs
         update_request = False
 
         regulator.synchro()
-        with dataLock:
+        with data_lock:
             # check for updated registers
             for idx in regs:
                 if regs[idx] is not None:
@@ -159,7 +173,7 @@ def create_app():
                         update_request = True
                         val = regs[idx][Diematic.REG_SET]
                         # print "Updating Diematic Reg:", idx, " Value: ", val
-                        # reset REG_SET 
+                        # reset REG_SET
                         regs[idx][Diematic.REG_SET] = None
                         regulator.diematicReg[idx][Diematic.REG_SET] = val
             if not update_request:
@@ -167,40 +181,44 @@ def create_app():
 
         if update_request:
             regulator.synchro()
-            with dataLock:
+            with data_lock:
                 copy_regs(regulator.diematicReg, regs)
 
-        updaterThread = threading.Timer(10, dataProducer, ())
-        updaterThread.start()
+        updater_thread = threading.Timer(10, data_producer, ())
+        updater_thread.start()
 
-    def dataProducer_start():
-        global updaterThread
+
+    def data_producer_start():
+        global updater_thread
 
         # do first sync quickly so that we have some data
-        updaterThread = threading.Timer(UPDT_TIME, dataProducer, ())
-        updaterThread.start()
+        updater_thread = threading.Timer(UPDT_TIME, data_producer, ())
+        updater_thread.start()
 
-    # create_app 
-    dataProducer_start()
+    # create_app
+    data_producer_start()
     atexit.register(interrupt)
+
 
 def init_logger():
     logging.basicConfig(
-        filename= app.config['DIEMATICD_LOGFILE'],
-        format  = '%(name)-12s:%(levelname)-8s %(message)s',
-        level   = logging.INFO
+        filename=app.config['DIEMATICD_LOGFILE'],
+        format='%(name)-12s:%(levelname)-8s %(message)s',
+        level=logging.INFO
     )
     logger1 = logging.getLogger('diematicd')
     return logger1
 
-logger = init_logger()
-connection = { 'type':     app.config['CONN_TYPE'], \
-               'device':   app.config['RS485_DEVICE'], \
-               'baudrate': app.config['RS485_BAUDRATE'], \
-               'ip_addr':  app.config['USR_TCP232_24_IP'], \
-               'ip_port':  app.config['USR_TCP232_24_PORT'] }
 
-logger.info('started diematicd at: ' + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+logger = init_logger()
+connection = {'type':     app.config['CONN_TYPE'], \
+              'device':   app.config['RS485_DEVICE'], \
+              'baudrate': app.config['RS485_BAUDRATE'], \
+              'ip_addr':  app.config['USR_TCP232_24_IP'], \
+              'ip_port':  app.config['USR_TCP232_24_PORT']}
+
+logger.info('started diematicd at: ' + \
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 regulator = Diematic(connection, debug=app.config['DIEMATIC_DEBUG'])
 copy_regs(regulator.diematicReg, regs)
 

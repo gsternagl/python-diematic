@@ -13,20 +13,21 @@ from .parameter import Parameters
 from .charts import Chart
 
 from .models import User
-from .forms import LoginForm, RegistrationForm, ControllerForm, ChartForm, ParameterForm, SettingsForm
+from .forms import LoginForm, RegistrationForm, ControllerForm, \
+                   ChartForm, ParameterForm, SettingsForm
 from .settings import MySettings
 
-timespans = ['1h','2h','6h','12h','1d','7d']
+timespans = ['1h', '2h', '6h', '12h', '1d', '7d']
 
 # global variables to remember last mask setting in ChartForm
 show_gaps = False
-timespan  = '1h'
+timespan = '1h'
 
 def display_form_errors(form):
     for fieldname, errors in form.errors.items():
-            for error in errors:
-                err_str = 'Error in field <' + fieldname + '>: ' + error
-                flash(err_str, 'error')
+        for error in errors:
+            err_str = 'Error in field <' + fieldname + '>: ' + error
+            flash(err_str, 'error')
 
 
 @login_manager.user_loader
@@ -67,7 +68,7 @@ def register():
 def login():
     if current_user.is_authenticated == True:
         return redirect(url_for('controller'))
-    
+
     form = LoginForm(request.form)
     if request.method == 'POST'and form.validate():
         check_user = User.query.filter_by(username=form.username.data).first()
@@ -79,13 +80,13 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/logout', methods = ['GET'])
+@app.route('/logout', methods=['GET'])
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/settings', methods = ['GET', 'POST'])
+@app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
     mysettings = MySettings(app)
@@ -105,7 +106,7 @@ def settings():
         )
         return redirect(url_for('controller'))
 
-    return render_template('settings.html', form=form, user=current_user) 
+    return render_template('settings.html', form=form, user=current_user)
 
 @app.route('/charts', methods=['GET', 'POST'])
 @login_required
@@ -114,14 +115,14 @@ def charts():
     global timespan
 
     form = ChartForm(
-        request.form, 
-        graph_type = timespans.index(timespan), 
-        graph_gaps = show_gaps
+        request.form,
+        graph_type=timespans.index(timespan),
+        graph_gaps=show_gaps
     )
 
     if request.method == 'POST':
         if form.submit_button.data:
-            timespan  = timespans[int(form.graph_type.data)]
+            timespan = timespans[int(form.graph_type.data)]
             show_gaps = form.graph_gaps.data
         else:
             flash('Unknown Event', 'error')
@@ -131,14 +132,14 @@ def charts():
         chart.get_data(timespan, show_gaps)
 
     return render_template(
-            'charts.html',
-            values1 = data_values1,
-            values2 = data_values2,
-            values3 = data_values3,
-            labels  = data_labels,
-            form    = form,
-            user    = current_user
-        )
+        'charts.html',
+        values1=data_values1,
+        values2=data_values2,
+        values3=data_values3,
+        labels=data_labels,
+        form=form,
+        user=current_user
+    )
 
 @app.route('/controller', methods=['GET', 'POST'])
 @login_required
@@ -178,8 +179,8 @@ def parameters():
 
     if request.method == 'POST' and form.validate():
         if form.sync_time.data:
-            params.ctrl_date    = datetime.now()
-            params.ctrl_time    = datetime.today().strftime('%H:%M')
+            params.ctrl_date = datetime.now()
+            params.ctrl_time = datetime.today().strftime('%H:%M')
             params.ctrl_weekday = datetime.today().isoweekday()
             form.ctrl_date.process(
                 MultiDict(
@@ -194,24 +195,24 @@ def parameters():
             )
             params.ctrl_date = form.ctrl_date.data
             params.ctrl_time = form.ctrl_time.data
-            params.weekday   = form.ctrl_weekday.data
+            params.weekday = form.ctrl_weekday.data
             params.set_datetime()
             flash('Time synched')
 
         elif form.set_time.data:
             params.ctrl_date = form.ctrl_date.data
             params.ctrl_time = form.ctrl_time.data
-            params.weekday   = form.ctrl_weekday.data
+            params.weekday = form.ctrl_weekday.data
             params.set_datetime()
             flash('set time called')
 
         elif form.set_temp.data:
-            params.temp_a_day     = form.temp_a_day.data
-            params.temp_a_night   = form.temp_a_night.data
+            params.temp_a_day = form.temp_a_day.data
+            params.temp_a_night = form.temp_a_night.data
             params.temp_a_antiice = form.temp_a_antiice.data
 
-            params.temp_b_day     = form.temp_b_day.data
-            params.temp_b_night   = form.temp_b_night.data
+            params.temp_b_day = form.temp_b_day.data
+            params.temp_b_night = form.temp_b_night.data
             params.temp_b_antiice = form.temp_b_antiice.data
             params.set_temp_heating()
             flash('set temperatures called')
@@ -228,7 +229,7 @@ def parameters():
             flash('set sum/win temp')
 
         elif form.set_ecs.data:
-            params.temp_ecs_day   = form.temp_ecs_day.data
+            params.temp_ecs_day = form.temp_ecs_day.data
             params.temp_ecs_night = form.temp_ecs_night.data
             params.set_temp_ecs()
             flash('set warmwater temp')
