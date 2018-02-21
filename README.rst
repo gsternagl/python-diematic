@@ -17,16 +17,23 @@ Requirements
 ------------
 
 a computer running Linux and Python (preferably a Raspberry Pi) or any UNIX-based computer with Python 2.7
-a RS-485 Interface card (e.g. USR-TCP232-24) https://www.amazon.de/Cablematic-Modul-T24-RS232-RS485-Modell-Ethernet-usr-tcp232/dp/B017C7HPW4/ref=sr_1_1?ie=UTF8&qid=1505822120&sr=8-1&keywords=USR-TCP232-24
-or alternatively this simple RS485 piggyback board which connects to the RPi's GPIO pins. https://www.conrad.de/de/raspberry-pi-erweiterungs-platine-rb-rs485-1267832.html
+a RS-485 Interface card (e.g. USR-TCP232-24) 
+
+<https://www.amazon.de/Cablematic-Modul-T24-RS232-RS485-Modell-Ethernet-usr-tcp232/dp/B017C7HPW4/ref=sr_1_1?ie=UTF8&qid=1505822120&sr=8-1&keywords=USR-TCP232-24> 
+
+or alternatively this simple RS485 piggyback board which connects to the RPi's GPIO pins. 
+
+<https://www.conrad.de/de/raspberry-pi-erweiterungs-platine-rb-rs485-1267832.html>
+
+
 I recommend to also look on ebay for these as you might be able to the same devices cheaper there. There are also some compatible variants available which use the same IP-based or serial interface. For the TCP-USR boards you do have to set their network configuration up once via some Windows software. Once you have done that they can be access like a serial interface but you use the socket API to communicate to them.
 
 The Diematic has a range of Modbus registers which slightly differ from model to model and they are not documented publicy. So you have to try out what works for you. I implemented to get and set temperatures and heating curves for my two heating circuits and the warm-water temperature only at the moment but it can be extended.
 
 For testing I recommend to stick to the CLI version or to start the web.py interface from command-line and then use the webbrowser for the GUI. For "production" I recommend to setup a simple web-server which starts the web.py main application.
 
-Version1
---------
+Version1(deprecated)
+--------------------
 
 This is what I am currently using "in production" and it should be fully functional. This version consists only of one module which is the web.py based Webgui. All communication to the Diematic Controller is triggered by calling methods of the Diematic class from bin/app.py which is the main web.py application.
 

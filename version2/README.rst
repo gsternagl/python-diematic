@@ -18,8 +18,14 @@ Requirements
 ------------
 
 a computer running Linux and Python (preferably a Raspberry Pi) or any UNIX-based computer with Python 2.7
-a RS-485 Interface card (e.g. USR-TCP232-24) <https://www.amazon.de/Cablematic-Modul-T24-RS232-RS485-Modell-Ethernet-usr-tcp232/dp/B017C7HPW4/ref=sr_1_1?ie=UTF8&qid=1505822120&sr=8-1&keywords=USR-TCP232-24>
-or alternatively this simple RS485 piggyback board which connects to the RPi's GPIO pins. <https://www.conrad.de/de/raspberry-pi-erweiterungs-platine-rb-rs485-1267832.html>
+a RS-485 Interface card (e.g. USR-TCP232-24) 
+
+<https://www.amazon.de/Cablematic-Modul-T24-RS232-RS485-Modell-Ethernet-usr-tcp232/dp/B017C7HPW4/ref=sr_1_1?ie=UTF8&qid=1505822120&sr=8-1&keywords=USR-TCP232-24>
+
+or alternatively this simple RS485 piggyback board which connects to the RPi's GPIO pins. 
+
+<https://www.conrad.de/de/raspberry-pi-erweiterungs-platine-rb-rs485-1267832.html>
+
 I recommend to also look on ebay for these as you might be able to the same devices cheaper there. There are also some compatible variants available which use the same IP-based or serial interface. For the TCP-USR boards you do have to set their network configuration up once via some Windows software. Once you have done that they can be access like a serial interface but you use the socket API to communicate to them.
 
 The Diematic has a range of Modbus registers which slightly differ from model to model and they are not documented publicy. So you have to try out what works for you. I implemented to get and set temperatures and heating curves for my two heating circuits and the warm-water temperature only at the moment but it can be extended.
@@ -48,9 +54,10 @@ diematicd
 ---------
 diematicd needs a dedicated port to communicate with the web-UI. Currently this is set in diematicd.py via the "app.run(port=5000)" method. If you want another port then change this in the source code as diematicd does not yet have a configuration file. This daemon should run all the time in the background so it might be best to start it via systemd. Don't forget to provide the required python packages. For development I use virtualenv but for deployment installing system-wide packages should be preferred.
 
-run it::
-cd version2
-python diematicd.py
+run it:
+
+* cd version2
+* python diematicd.py
 
 
 web-ui
@@ -59,15 +66,18 @@ Use the new package in directory "version2/web-ui-new". There is also a virtuale
 
 There is a configuration file called config.py which you can change with a text editor. The most important settings are die IP-address and port of the "diematicd" and the port address of the web-server itself. 
 
-The virtualenv is for OSX. So you might just want to replace it by ::
-\# cd version2/web-ui-new
-\# rm -rf flask
-\# virtualenv flask
-\# source flask/bin/activate
-\# pip install -r requirements.txt
+The virtualenv is for OSX. So you might just want to replace it by:
 
-The web-ui can be started with::
-\# python run_dev.py
+* cd version2/web-ui-new
+* rm -rf flask
+* virtualenv flask
+* source flask/bin/activate
+* pip install -r requirements.txt
+
+
+The web-ui can be started with:
+
+* python run_dev.py
 
 Connect your browser to <http://0.0.0.0:5001>
 
