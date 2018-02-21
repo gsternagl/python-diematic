@@ -1,3 +1,12 @@
+Current implemented Diematic registers
+======================================
+Look into diematic.py for class **diematicReg**. It describes:
+* modbus address
+* register types (boolean, short int, real)
+* whether register can be set or not
+* min / max. values for the register
+
+
 'HOUR'				Controller Time Hour
 'MINUTE'			Controller Time Minute
 'WEEKDAY'			Controller Date Weekday

@@ -5,17 +5,17 @@ in directory ./flask. For production this can be replaced by system-wide
 python packages
 
 for local testing start with::
-/# ./run_dev.py
+\# ./run_dev.py
 
 This outputs the URL which you can connect to using a web-browser. 
-It's usually: http://0.0.0.0:5001
+It's usually: <http://0.0.0.0:5001>
 
 You need a use login to access the UI. The user accounts can be managed with
 another Flask-application called "admin_ui". 
 You can start this (not concurrently with the Web-UI as they are using the same port 5001) by doing::
-/# ./run_admin_dev.py
+\# ./run_admin_dev.py
 
-Also connect to http://0.0.0.0:5001
+Also connect to <http://0.0.0.0:5001>
 
 Setting it up for production
 ----------------------------
