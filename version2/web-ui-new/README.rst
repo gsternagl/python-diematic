@@ -11,8 +11,8 @@ for local testing start with:
 This outputs the URL which you can connect to using a web-browser. 
 It's usually: <http://0.0.0.0:5001>
 
-You need a use login to access the UI. The user accounts can be managed with
-another Flask-application called "admin_ui". 
+You need a login to access the UI. The user accounts can be managed with
+another Flask-application called **admin_ui**
 
 You can start this (not concurrently with the Web-UI as they are using the same port 5001) by doing:
 
