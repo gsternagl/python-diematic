@@ -1,0 +1,31 @@
+---
+- name: Deploy Diematic
+  hosts: gerry1
+  remote_user: gsternag
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: test connection
+    ping:
+
+  - name: stop starten
+    service: name=nginx state=stopped
+
+  - name: stop gunicorn.socket
+    service: name=gunicorn.socket state=stopped
+
+  - name: copy python files
+    copy:
+        src: /Users/gsternag/Source/python/diematic/version2/nginx/sites-enabled/diematic
+        dest: /etc/nginx/sites-enabled
+        owner: root
+        group: root
+ 
+  - name: start gunicorn.socket
+    service: name=gunicorn.socket state=started
+
+  - name: nginx starten
+    service: name=nginx state=started
+
+

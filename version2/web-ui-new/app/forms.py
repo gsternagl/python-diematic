@@ -230,7 +230,7 @@ class ParameterForm(Form):
     refresh_button = SubmitField('Refresh')
 
 class RegistrationForm(Form):
-    username = StringField(
+    login = StringField(
         'Username', [
             validators.Required(),
             validators.Length(min=4, max=20)
@@ -250,7 +250,7 @@ class RegistrationForm(Form):
     email = StringField('Email', [validators.Length(max=30)])
 
 class LoginForm(Form):
-    username = StringField(
+    login = StringField(
         'Username', [
             validators.Required(),
             validators.Length(min=4, max=20)

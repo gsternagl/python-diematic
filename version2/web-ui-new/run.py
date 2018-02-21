@@ -1,4 +1,9 @@
-#!flask/bin/python
+#!/usr/bin/python
 
+from gevent.wsgi import WSGIServer
 from app import app
-app.run(port=5001, debug=app.config['DEBUG'])
+
+if __name__ == "__main__":
+    http_server = WSGIServer(('', 5000), app)
+    http_server.serve_forever()
+    #app.run(port=5001, debug=app.config['DEBUG'])

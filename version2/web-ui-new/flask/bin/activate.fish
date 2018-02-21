@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/gsternag/Source/python/flask/flask-wtf-bootstrap/diematic-gui-app/flask"
+set -gx VIRTUAL_ENV "/Users/gsternag/Source/python/diematic/version2/web-ui-new/flask"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

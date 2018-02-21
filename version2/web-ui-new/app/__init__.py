@@ -48,3 +48,6 @@ if app.config['DIEMATICD_EMULATION']:
     params.emulate_on()
 
 from app import views, models
+
+if __name__=='__main__':
+    app.run(port=5001, debug=app.config['DEBUG'])

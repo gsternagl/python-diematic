@@ -42,25 +42,25 @@ def before_request():
     session.modified = True
     global_buffer.user = current_user
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegistrationForm(request.form)
-    if request.method == 'POST':
-        if form.validate():
-            existing_user = User.query.filter_by(username=form.username.data).first()
-            if existing_user is None:
-                hashpass = generate_password_hash(form.password.data, method='sha256')
-                user = User(form.username.data, hashpass, form.email.data)
-                db.session.add(user)
-                db.session.commit()
-                login_user(user)
-                flash('user registered and logged in', 'warning')
-            else:
-                flash('user already exists!', 'error')
-                return redirect(url_for('register'))
-        else:
-            display_form_errors(form)
-    return render_template('register.html', form=form)
+#@app.route('/register', methods=['GET', 'POST'])
+#def register():
+#    form = RegistrationForm(request.form)
+#    if request.method == 'POST':
+#        if form.validate():
+#            existing_user = User.query.filter_by(login=form.login.data).first()
+#            if existing_user is None:
+#                hashpass = generate_password_hash(form.password.data, method='sha256')
+#                user = User(form.login.data, hashpass, form.email.data)
+#                db.session.add(user)
+#                db.session.commit()
+#                login_user(user)
+#                flash('user registered and logged in', 'warning')
+#            else:
+#                flash('user already exists!', 'error')
+#                return redirect(url_for('register'))
+#        else:
+#            display_form_errors(form)
+#    return render_template('register.html', form=form)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -71,7 +71,9 @@ def login():
 
     form = LoginForm(request.form)
     if request.method == 'POST'and form.validate():
-        check_user = User.query.filter_by(username=form.username.data).first()
+        check_user = User.query.filter_by(login=form.login.data).first()
+        print "check_user.l=", check_user.login
+        print "check_user.p=", check_user.password
         if check_user:
             if check_password_hash(check_user.password, form.password.data):
                 login_user(check_user)

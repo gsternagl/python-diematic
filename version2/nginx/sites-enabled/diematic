@@ -1,0 +1,17 @@
+server {
+  
+    listen 80 default_server;
+    server_name 192.168.178.136;
+    charset utf-8;
+
+	location = /favicon.ico { access_log off; log_not_found off; }
+
+    location /static/ {
+        root /home/gsternag/src/python/diematic/version2/web-ui-new/app;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn/diematic.sock;
+    }
+}
