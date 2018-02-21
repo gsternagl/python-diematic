@@ -38,7 +38,7 @@ diematicd and the web-ui can be deployed on 2 different servers but can also be 
 # diematicd:
 diematicd needs a dedicated port to communicate with the web-UI. Currently this is set in diematicd.py via the "app.run(port=5000)" method. If you want another port then change this in the source code as diematicd does not yet have a configuration file. This daemon should run all the time in the background so it might be best to start it via systemd. Don't forget to provide the required python packages. For development I use virtualenv but for deployment installing system-wide packages should be preferred.
 
-run it by:
+run it::
 /# cd version2
 /# python diematicd.py
 
@@ -47,11 +47,15 @@ Use the new package in directory "version2/web-ui-new". There is also a virtuale
 
 There is a configuration file called config.py which you can change with a text editor. The most important settings are die IP-address and port of the "diematicd" and the port address of the web-server itself. 
 
-The web-ui can be started with
-/# cd version2
-/# python run.py
+The virtualenv is for OSX. So you might just want to replace it by ::
+/# cd version2/web-ui-new
+/# rm -rf flask
+/# virtualenv flask
+/# source flask/bin/activate
+/# pip install -r requirements.txt
 
-The virtualenv is for OSX. So you might just want to replace it by going into directory "version2/web-ui-new/flask" and doing a "rm -r * "
+The web-ui can be started with::
+/# python run_dev.py
 
 Connect your browser to http://0.0.0.0:5001
 
@@ -59,12 +63,9 @@ The port address can also be changed in "version2/web-ui-new/run.py" in the meth
 
 Befor you can login you need to register a new user. The security model is not yet fully implemented. Just use "register" in the UI to create a new user and then login with that user.
 
-# InfluxDB:
-I have started using InfluxDB to store my heatings measures and there is a simple charts module in the web-ui which displays these values. My InfluxDB database is running on a VM and I use a little python script "version2/influxDB/aufz-diem-influx.py" which permanently runs. It reads values from "diematic" and stores them in the database. 
+# InfluxDB
+I have started using InfluxDB to store my heating's measures and there is a simple charts module in the web-ui which displays these values. My InfluxDB database is running on a VM and I use a little python script "version2/influxDB/aufz-diem-influx.py" which gets values from "diematicd" every 30 sec and writes them into InfluxDB. 
 
 There are also some settings for the web-ui how to access the InfluxDB server in "version2/web-ui-new/config.py"
 
-If you don't want to use InfluxDB you can switch it off by setting INFLUXDB_EMULATION = True in "version2/web-ui-new/config.py"
-
-
-
+If you don't want to use InfluxDB you can switch it off by setting INFLUXDB_EMULATION = True in "version2/web-ui-new/config.py". The charts will then show some testing measures.
