@@ -55,10 +55,12 @@ if __name__=='__main__':
     while conn is not None:
         try:
             resp = requests.get(URL, headers=headers)
+            error = False
         except:
             pass
+            error = True
 
-        if resp.status_code == 200:
+        if not error and resp.status_code == 200:
             data = resp.json()
             thedate = datetime.now().strftime('%s')
             if data is not None:

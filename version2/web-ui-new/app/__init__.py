@@ -1,3 +1,4 @@
+"""This is the main file for the diematic web ui."""
 from datetime import datetime
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -49,5 +50,5 @@ if app.config['DIEMATICD_EMULATION']:
 
 from app import views, models
 
-if __name__=='__main__':
+if __name__ == '__main__':
     app.run(port=5001, debug=app.config['DEBUG'])

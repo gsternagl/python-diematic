@@ -11,6 +11,9 @@ RuntimeDirectory=gunicorn
 WorkingDirectory=/home/gsternag/src/python/diematic/version2/web-ui-new
 ExecStart=/usr/local/bin/gunicorn --pid /run/gunicorn/pid \
           --bind unix:/run/gunicorn/diematic.sock run:app
+SyslogIdentifier=gunicorn.service
+StandardOutput=syslog
+StandardError=syslog
 #ExecReload=/bin/kill -s HUP $MAINPID
 #ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true

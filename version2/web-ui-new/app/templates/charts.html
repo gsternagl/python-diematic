@@ -23,13 +23,18 @@
    		<td>
    		  <canvas id="myChart" width="600" height="400"></canvas>
    		</td>
-   		<td>
+   		<td align="right">
    		  <p>{{ form.graph_type.label }}</p>
   		  <p>{{ form.graph_type }}</p>
    		  <span>
 		    {{ form.graph_gaps.label }}
   		    {{ form.graph_gaps }}
 		  </span>
+		  <p>
+		  <p>Burner Starts in Period</p>
+		  <p>{{ burner_total }}</p>
+		  <p>Burner Starts per hour</p>
+		  <p>{{ burner_ph }}</p>
    		</td>
   	  </tr>
   	  <tr>

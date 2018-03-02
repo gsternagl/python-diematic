@@ -1,8 +1,12 @@
+"""charts.py module."""
+from __future__ import print_function
+from datetime import datetime
 from influxdb import InfluxDBClient
-from datetime import datetime, date, time
-
 
 class Chart(object):
+    """ This class implements the main functions to get the data to
+        be displayed via the Chart.js JavaScript library."""
+
     def __init__(self, app):
         try:
             self.INFLUX_EMULATION = app.config['INFLUX_EMULATION']
@@ -17,6 +21,8 @@ class Chart(object):
 
 
     def get_data(self, time_span, show_gaps):
+        """ Get temperature data from InfluxDB in return it as 3 different 
+            value lists and 1 label list with the timestamps."""
         data_values1 = []
         data_values2 = []
         data_values3 = []
@@ -43,7 +49,7 @@ class Chart(object):
                 try:
                     result = client.query(query, database=self.INFLUX_DBNAME)
                 except:
-                    print 'InfluxDB query failed'
+                    print('InfluxDB query failed')
                     return [], [], [], []
 
                 if result is not None:

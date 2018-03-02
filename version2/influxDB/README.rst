@@ -5,7 +5,7 @@ This little python script talks to **diematicd** every 30 secs and stores the va
 
 Run the following command in the background to ingest time-series data into an InfluxDB Server:
 
-* python aufz-diem-influx.py &
+* python diematic-record.py &
 
 
 Ideally this should be done with setting up a systemd service.

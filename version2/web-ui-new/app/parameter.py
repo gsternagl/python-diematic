@@ -1,3 +1,5 @@
+"""parameter.py module."""
+from __future__ import print_function
 import json
 from datetime import date
 import requests
@@ -5,6 +7,7 @@ from requests import ConnectionError
 
 
 class Parameters(object):
+    """The main parameter class, required by ParameterForm."""
     REG_VAL = 4
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
 
@@ -44,10 +47,13 @@ class Parameters(object):
         self.mode_heating = mode_heating
 
     def emulate_on(self):
+        """switch diematic emulation mode on."""
         self.emulate = True
 
     def update(self):
+        """update parameters by reading it from diematicd."""
         if self.emulate:
+            # In case of emulation mode we don't want to read from diematic
             pass
         else:
             try:
@@ -93,14 +99,15 @@ class Parameters(object):
                     return True
 
                 else:
-                    print 'error converting JSON data from diematicd'
+                    print('error converting JSON data from diematicd')
             else:
-                print 'error reading data from diematicd'
+                print('error reading data from diematicd')
 
         return False
 
 
     def transmit_data(self, data):
+        """write the parameters from the form to diematicd."""
         for reg in data:
             var1 = {reg: [data[reg]]}
             data_str = json.dumps(var1, indent=4)
@@ -110,14 +117,15 @@ class Parameters(object):
                     resp = requests.post(url, data=data_str, \
                                          headers=self.headers)
                     if resp.status_code != 200:
-                        print 'Error: ', resp.status_code
+                        print('Error: ' + resp.status_code)
                 except:
-                    print 'Error writing to diematicd'
+                    print('Error writing to diematicd')
             else:
-                print 'Data=', data_str
+                print('Data=' + data_str)
 
 
     def set_datetime(self):
+        """update diematic date and time."""
         data = {
             'DAY':    int(self.ctrl_date.day), \
             'MONTH':  int(self.ctrl_date.month), \
@@ -130,6 +138,7 @@ class Parameters(object):
 
 
     def set_temp_heating(self):
+        """transmit heating parameters."""
         data = {
             'CONS_DAY_A':     float(self.temp_a_day), \
             'CONS_NIGHT_A':   float(self.temp_a_night), \
@@ -143,12 +152,14 @@ class Parameters(object):
 
 
     def set_temp_sumwin(self):
+        """transmit summer / winter mode parameters."""
         data = {'CONS_SUMWIN': float(self.temp_sum_win)}
         self.transmit_data(data)
         return
 
 
     def set_steepness(self):
+        """transmit heating steepness parameters."""
         data = {
             'STEEPNESS_A': float(self.steepness_a), \
             'STEEPNESS_B': float(self.steepness_b) \
@@ -158,6 +169,7 @@ class Parameters(object):
 
 
     def set_temp_ecs(self):
+        """transmit warmwater settings."""
         data = {
             'CONS_ECS_DAY':   float(self.temp_ecs_day), \
             'CONS_ECS_NIGHT': float(self.temp_ecs_night) \
@@ -167,6 +179,7 @@ class Parameters(object):
 
 
     def set_temp_boiler(self):
+        """transmit boiler settings."""
         data = {
             'MIN_BOILER': float(self.temp_boiler_min), \
             'MAX_BOILER': float(self.temp_boiler_max) \

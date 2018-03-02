@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #-*- coding: utf-8 -*-
 """  __init__.py
 
@@ -45,11 +44,12 @@ app.config.from_object('config')
 app.config['PROPAGATE_EXCEPTIONS'] = False
 
 
-""" write Diematic registers into a string in JSON-format
-    if arg = <None> then dump all registers
-    otherwise just dump one register with the name = <arg>.
-"""
 def create_json(reg, arg):
+    """ write Diematic registers into a string in JSON-format
+        if arg = <None> then dump all registers
+        otherwise just dump one register with the name = <arg>.
+    """
+
     buff = ''
 
     if reg is not None:
@@ -66,14 +66,14 @@ def create_json(reg, arg):
     return buff
 
 
-""" copy registers from downstream to upstream.
-"""
 def copy_regs(reg1, reg2):
+    """ copy registers from downstream to upstream."""
     for idx in reg1:
         reg2.update({idx: reg1[idx]})
 
 
 def update_reg(reg, val):
+    """ update a register by writing the value into the set register."""
     global regs
     global data_lock
 
@@ -83,6 +83,8 @@ def update_reg(reg, val):
 
 
 def check_data(reg, data):
+    """check whether the data is valid."""
+
     global regs
     data_ok = False
     reg_match = False
@@ -112,6 +114,8 @@ def check_data(reg, data):
 # dump all register data in JSON
 @app.route('/registers', methods=['GET'])
 def dump_registers():
+    """main rout for dumping all registers."""
+
     global regs
 
     buff = create_json(regs, None)
@@ -121,6 +125,8 @@ def dump_registers():
 # GET, PUT, POST one register in JSON
 @app.route('/registers/<string:reg>', methods=['GET', 'PUT', 'POST'])
 def dump_register(reg):
+    """route for dumping one specific register <reg>."""
+
     global regs
     found = False
 
@@ -152,13 +158,17 @@ def dump_register(reg):
 
 
 def create_app():
+    """ setup the app."""
 
     def interrupt():
+        """ cancel the updater thread."""
         global updater_thread
         updater_thread.cancel()
 
 
     def data_producer():
+        """ read/write from/to Diematic III and copy into temp registers."""
+
         global updater_thread
         global data_lock
         global regs
@@ -189,6 +199,8 @@ def create_app():
 
 
     def data_producer_start():
+        """ start the main background thread."""
+
         global updater_thread
 
         # do first sync quickly so that we have some data
@@ -201,6 +213,8 @@ def create_app():
 
 
 def init_logger():
+    """ setup our logfile."""
+
     logging.basicConfig(
         filename=app.config['DIEMATICD_LOGFILE'],
         format='%(name)-12s:%(levelname)-8s %(message)s',

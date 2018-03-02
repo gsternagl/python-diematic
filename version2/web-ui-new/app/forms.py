@@ -1,11 +1,14 @@
+"""forms.py the main module with the definition of the Flask Forms."""
+from __future__ import print_function
 from flask_wtf import FlaskForm as Form
 from wtforms import StringField, DecimalField, IntegerField, \
                     DateField, SelectField, SubmitField, PasswordField, \
                     BooleanField, validators
-from wtforms.validators import Length, InputRequired
+from wtforms.validators import ValidationError
 
 
 class SettingsForm(Form):
+    """This Form contains all the app settings."""
     influxdb_host = StringField('InfluxDB hostname/IP-address')
     influxdb_port = IntegerField('InfluxDB portnumber')
     influxdb_db = StringField('InfluxDB database name')
@@ -18,6 +21,7 @@ class SettingsForm(Form):
     submit_button = SubmitField('Submit')
 
 class ControllerForm(Form):
+    """This Form displays all Diematic III controller parameters."""
     ctrl_date = DateField('Diematic-Date', format='%d.%m.%Y', render_kw={'readonly': True})
     ctrl_time = StringField('Diematic-Time', render_kw={'readonly': True})
     ctrl_weekday = IntegerField('Weekday', render_kw={'readonly': True})
@@ -51,6 +55,7 @@ class ControllerForm(Form):
     submit_button = SubmitField('Submit')
 
 def validate_time(form, field):
+    """help function which validates time field inputs."""
     buff = field.data
     if len(buff) == 5:
         if buff[2] == ':' and \
@@ -73,6 +78,7 @@ def validate_time(form, field):
                               'HH:MM, H=00..23, MM=00..59')
 
 class ChartForm(Form):
+    """The Form which contains the temperature charts."""
     graph_type = SelectField(
         'Select Timespan',
         choices=[(0, 'last hour'),
@@ -84,10 +90,13 @@ class ChartForm(Form):
         default=1
     )
     graph_gaps = BooleanField('Show Gaps')
+    burner_starts1 = DecimalField('Burner Starts in period')
+    burner_starts2 = DecimalField('Burner Starts per hour')
+
     submit_button = SubmitField('Refresh')
 
 class ParameterForm(Form):
-    # Section Date/Time/Weekday Parameters
+    """All known Diematic III parameters can be display/changed here."""
     ctrl_date = DateField('Diematic-Date', format='%d.%m.%Y')
     ctrl_time = StringField('Diematic-Time', [validate_time])
     ctrl_weekday = IntegerField(
@@ -230,6 +239,7 @@ class ParameterForm(Form):
     refresh_button = SubmitField('Refresh')
 
 class RegistrationForm(Form):
+    """The user registration Form."""
     login = StringField(
         'Username', [
             validators.Required(),
@@ -250,6 +260,7 @@ class RegistrationForm(Form):
     email = StringField('Email', [validators.Length(max=30)])
 
 class LoginForm(Form):
+    """The Login Form."""
     login = StringField(
         'Username', [
             validators.Required(),

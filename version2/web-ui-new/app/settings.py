@@ -1,4 +1,8 @@
+"""settings.py module."""
+from __future__ import print_function
+
 class MySettings(object):
+    """The main class for the settings form."""
 
     def __init__(self, app):
         self.influxdb_host = app.config['INFLUX_HOST']
@@ -19,6 +23,7 @@ class MySettings(object):
                influxdb_pw,
                diematicd_host,
                diematicd_port):
+        """update settings."""
 
         self.influxdb_host = app.config['INFLUX_HOST'] = influxdb_host
         self.influxdb_port = app.config['INFLUX_PORT'] = influxdb_port

@@ -1,0 +1,11 @@
+/var/log/homematic-record.log { 
+    su root adm
+    daily
+    rotate 5
+    compress
+    delaycompress
+    missingok
+    postrotate
+        systemctl restart rsyslog > /dev/null
+    endscript    
+}

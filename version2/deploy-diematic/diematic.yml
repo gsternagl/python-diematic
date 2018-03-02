@@ -2,7 +2,7 @@
 - name: Deploy Diematic
   hosts: gerry1
   remote_user: gsternag
-  become: yes
+  become: true
   become_method: sudo
 
   tasks:
@@ -31,7 +31,11 @@
             - "--exclude=influxDB/venv"
             - "--exclude=diematicd/flask"
             - "--exclude=web-ui-new/flask"
- 
+
+  - name: install python-libraries
+    pip:
+      requirements: /home/gsternag/src/python/diematic/version2/web-ui-new/requirements.txt 
+
   - name: start gunicorn.socket
     service: name=gunicorn.socket state=started
 

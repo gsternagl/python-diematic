@@ -1,12 +1,18 @@
-from datetime import datetime, time, date, timedelta
+"""views.py module."""
+from __future__ import print_function
+from datetime import datetime, timedelta
 from time import sleep
-from flask import Flask, request, flash, url_for, redirect, \
-     render_template, abort, session, g as global_buffer
-
-from flask_login import login_user, login_required, logout_user, current_user
 
 from werkzeug.datastructures import MultiDict
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+
+from flask_login import login_user, login_required, logout_user, current_user
+from flask import request, flash, url_for, redirect, \
+     render_template, session, g as global_buffer
+
+
+import numpy as np
+import peakutils
 
 from app import app, db, login_manager, params
 from .parameter import Parameters
@@ -18,12 +24,15 @@ from .forms import LoginForm, RegistrationForm, ControllerForm, \
 from .settings import MySettings
 
 timespans = ['1h', '2h', '6h', '12h', '1d', '7d']
+hourtable = {'1h': 1, '2h': 2, '6h': 6, '12h': 12, '1d': 24, '7d': 24*7}
 
 # global variables to remember last mask setting in ChartForm
 show_gaps = False
 timespan = '1h'
 
 def display_form_errors(form):
+    """helper function which display form field errors."""
+
     for fieldname, errors in form.errors.items():
         for error in errors:
             err_str = 'Error in field <' + fieldname + '>: ' + error
@@ -32,11 +41,15 @@ def display_form_errors(form):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """helper function for user authentication."""
+
     return User.query.get(int(user_id))
 
 
 @app.before_request
 def before_request():
+    """helper function for session mgmt."""
+
     session.permanent = True
     app.permanent_session_lifetime = timedelta(minutes=5)
     session.modified = True
@@ -66,14 +79,14 @@ def before_request():
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """check and log user in."""
+
     if current_user.is_authenticated == True:
         return redirect(url_for('controller'))
 
     form = LoginForm(request.form)
     if request.method == 'POST'and form.validate():
         check_user = User.query.filter_by(login=form.login.data).first()
-        print "check_user.l=", check_user.login
-        print "check_user.p=", check_user.password
         if check_user:
             if check_password_hash(check_user.password, form.password.data):
                 login_user(check_user)
@@ -85,12 +98,16 @@ def login():
 @app.route('/logout', methods=['GET'])
 @login_required
 def logout():
+    """log the user out."""
+
     logout_user()
     return redirect(url_for('login'))
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
+    """settings route => Start the settings view."""
+
     mysettings = MySettings(app)
     form = SettingsForm(request.form, obj=mysettings)
 
@@ -113,6 +130,8 @@ def settings():
 @app.route('/charts', methods=['GET', 'POST'])
 @login_required
 def charts():
+    """charts route => start charts form."""
+
     global show_gaps
     global timespan
 
@@ -133,19 +152,29 @@ def charts():
     data_values1, data_values2, data_values3, data_labels = \
         chart.get_data(timespan, show_gaps)
 
+    cb = np.array(data_values3)
+    peaks = peakutils.indexes(cb, thres=0.02 / max(cb), min_dist=5)
+
+    starts_total = len(peaks)
+    starts_per_h = int(round(float(starts_total) / \
+                             float(hourtable[timespan]), 0))
+
     return render_template(
         'charts.html',
+        form=form,
+        user=current_user,
         values1=data_values1,
         values2=data_values2,
         values3=data_values3,
         labels=data_labels,
-        form=form,
-        user=current_user
+        burner_total=starts_total,
+        burner_ph=starts_per_h,
     )
 
 @app.route('/controller', methods=['GET', 'POST'])
 @login_required
 def controller():
+    """controller route => start the controller form."""
 
     params.update()
 
@@ -155,8 +184,8 @@ def controller():
     )
     if request.method == 'POST' and form.validate():
         if form.submit_button.data:
-            print "mode_heating=", form.mode_heating.data
-            print "mode_ecs=", form.mode_ecs.data
+            print("mode_heating=" + form.mode_heating.data)
+            print("mode_ecs=" + form.mode_ecs.data)
             flash('Data posted')
         elif form.refresh_button.data:
             # enforce to reload the form by redirect and call 'GET' requests
@@ -170,9 +199,10 @@ def controller():
 @app.route('/parameters', methods=['GET', 'POST'])
 @login_required
 def parameters():
+    """parameters route => start parameters form."""
 
     params.update()
-    # print 'reached params.update'
+    # print('reached params.update')
 
     form = ParameterForm(
         request.form,
