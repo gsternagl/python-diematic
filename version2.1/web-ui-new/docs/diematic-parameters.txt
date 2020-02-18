@@ -1,0 +1,34 @@
+Current implemented Diematic registers
+======================================
+Look into diematic.py for class **diematicReg**. It describes:
+* modbus address
+* register types (boolean, short int, real)
+* whether register can be set or not
+* min / max. values for the register
+
+
+'HOUR'				Controller Time Hour
+'MINUTE'			Controller Time Minute
+'WEEKDAY'			Controller Date Weekday
+'TEMP_EXT'			Temperature Outside
+'CONS_SUMWIN'		Temperature for Summer/Winter automatic
+'NB_DAY_ANTIICE'
+'CONS_DAY_A'		Heating circuit A day temperature
+'CONS_NIGHT_A'		Heating circuit A night temperature
+'CONS_ANTIICE_A'	Heating circuit A anti-frost temperature
+'MODE_A'			Heating Mode and Warm-Water Mode
+'STEEPNESS_A'		Steepness circuit A
+'CONS_DAY_B'		Heating circuit B day temperature
+'CONS_NIGHT_B'		Heating circuit B night temperature
+'CONS_ANTIICE_B'	Heating circuit B anti-frost temperature
+'STEEPNESS_B'		Steepness circuit B
+'CONS_ECS_DAY'		Temperature Warmwater Day
+'TEMP_ECS'			Temperature Warmwater measured
+'CONS_BOILER'		Temperature Boiler calculated
+'TEMP_BOILER'		Temperature Boiler measured
+'BASE_ECS'			Register for Heating and Warmwater Modes
+'CONS_ECS_NIGHT'	Temperature Warmwater Night
+'DAY'				Controller Date Day
+'MONTH'				Controller Date Month
+'YEAR'				Controller Date Year
+'ALARM'				Alarm Register

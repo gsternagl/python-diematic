@@ -1,0 +1,46 @@
+---
+- name: Deploy Diematic
+  hosts: gerry1
+  remote_user: gsternag
+  become: true
+  become_method: sudo
+
+  tasks:
+  - name: test connection
+    ping:
+
+  - name: stop starten
+    service: name=nginx state=stopped
+
+  - name: stop diematic-ui.socket
+    service: name=diematic-ui.socket state=stopped
+
+  - name: copy python files
+    synchronize:
+        src: /Users/gsternag/Source/python/diematic/version2.1
+        dest: /home/gsternag/src/python/diematic
+        owner: yes
+        group: yes
+        rsync_opts:
+            - "--exclude=.git"
+            - "--exclude=*.pyc"
+            - "--exclude=examples"
+            - "--exclude=test"
+            - "--exclude=tools"
+            - "--exclude=web-ui-deprecated"
+            - "--exclude=influxDB/venv"
+            - "--exclude=diematicd/flask"
+            - "--exclude=web-ui-new/flask"
+
+  - name: install python-libraries
+    pip:
+      executable: /usr/bin/pip3
+      requirements: /home/gsternag/src/python/diematic/version2.1/web-ui-new/requirements.txt 
+
+  - name: start diematic-ui.socket
+    service: name=diematic-ui.socket state=started
+
+  - name: nginx starten
+    service: name=nginx state=started
+
+

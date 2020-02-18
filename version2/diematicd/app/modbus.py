@@ -15,16 +15,18 @@ class ModBus(object):
     NOT_CONNECTED = -1
     FRAME_OK = 0
     FRAME_EMPTY = 1
+    READ_ERROR = 2
     FRAME_ERROR = 3
-    NOT_ADRESSED_TO_ME = 4
-    NOT_SUPPORTED_FC = 5
-    CRC_ERROR = 6
-    NO_ACK = 7
-    ADDR_ERROR = 8
-    FC_ERROR = 9
-    WRITE_FAILED = 10
-    READ_FAILED = 11
-    READ_ERROR = 12
+    FRAME_LENGTH_ERROR = 4
+    FRAME_TOO_SHORT = 5
+    NOT_ADDRESSED_TO_ME = 6
+    NOT_SUPPORTED_FC = 7
+    FRAME_TOO_LONG = 8
+    CRC_ERROR = 9
+    NO_ACK = 10
+    ADDR_ERROR = 11
+    FC_ERROR = 12
+    WRITE_ERROR = 13
 
     READ_ANALOG_HOLDING_REGISTERS = 0x03
     WRITE_MULTIPLE_REGISTERS = 0x10
@@ -163,86 +165,125 @@ class ModBus(object):
         # check length
         if len(self.rx_buff) > self.FRAME_MAX_LENGTH or \
            len(self.rx_buff) < self.FRAME_MIN_LENGTH:
-            self.logger.debug("slave_rx: FRAME_ERROR")
-            self.status = self.FRAME_ERROR
+            self.logger.debug("slave_rx: FRAME_LENGTH_ERROR")
+            self.status = self.FRAME_LENGTH_ERROR
             return self.status
 
         # check modBus address
         addr = ord(self.rx_buff[0])
         if self.modbus_addr != 0 and addr != self.modbus_addr:
-            self.logger.debug("slave_rx: NOT_ADRESSED_TO_ME")
-            self.status = self.NOT_ADRESSED_TO_ME
+            self.logger.debug("slave_rx: NOT_ADDRESSED_TO_ME")
+            self.status = self.NOT_ADDRESSED_TO_ME
             return self.status
 
         # check modBus feature
         fc = ord(self.rx_buff[1])
+
         if fc != self.WRITE_MULTIPLE_REGISTERS:
             self.logger.debug("slave_rx: NOT_SUPPORTED_FC: >" + hex(fc) + "<")
             self.status = self.NOT_SUPPORTED_FC
             return self.status
-
         # decode WRITE_MULTIPLE_REGISTERS frame
-        # decode register number
-        if len(self.rx_buff) < 9:
-            self.logger.debug("slave_rx: FRAME_ERROR")
-            self.status = self.FRAME_ERROR
+        if fc == self.WRITE_MULTIPLE_REGISTERS:
+            # decode register number
+            if len(self.rx_buff) < 9:
+                self.logger.debug("slave_rx: FRAME_LENGTH_ERROR")
+                self.status = self.FRAME_LENGTH_ERROR
+                return self.status
+
+            reg_nr = ord(self.rx_buff[4]) * 0x100 + ord(self.rx_buff[5])
+
+            # check if byte nb is twice register number
+            if 2*reg_nr != ord(self.rx_buff[6]):
+                self.logger.debug("slave_rx: FRAME_ERROR")
+                self.status = self.FRAME_ERROR
+                return self.status
+
+            # calculate frame wait length
+            frame_len = 2 * reg_nr + 9
+            if frame_len > len(self.rx_buff):
+                self.logger.debug("slave_rx: FRAME_TOO_SHORT")
+                self.status = self.FRAME_TOO_SHORT
+                return self.status
+
+            # check frame size
+            if (frame_len + self.FRAME_EXTRA_BYTE_ALLOWED) < len(self.rx_buff):
+                self.logger.debug("slave_rx: FRAME_TOO_LONG")
+                self.status = self.FRAME_TOO_LONG
+                return self.status
+
+            # check CRC
+            crc_calc = self.calc_crc_16(self.rx_buff, frame_len - 2)
+            crc = 0x100 * ord(self.rx_buff[frame_len - 1]) + \
+                  ord(self.rx_buff[frame_len - 2])
+            if crc != crc_calc:
+                self.logger.debug("slave_rx: CRC_ERROR")
+                self.status = self.CRC_ERROR
+                return self.status
+
+            # frame is correct, save values and acknowledge
+            reg_addr = 0x100 * ord(self.rx_buff[2]) + ord(self.rx_buff[3])
+            for i in range(0, reg_nr):
+                idx = reg_addr + i
+                val = 0x100 * ord(self.rx_buff[2*i+7]) + ord(self.rx_buff[2*i+8])
+                self.rx_reg.update({idx : val})
+
+            self.logger.debug("FRAME_OK")
+            self.logger.debug(self.print_r(self.rx_reg))
+            tx = self.rx_buff[0:6]
+
+            # calculate and add checksum
+            checksum = self.calc_crc_16(tx, 6)
+            tx += chr(checksum & 0xff)
+            tx += chr((checksum >> 8) & 0xff)
+            tx += chr(0) + chr(0) + chr(0)
+
+            # send acknowledge if slave address is not 0
+            if self.modbus_addr != 0:
+                result = self.conn_write(tx)
+                if result == 0:
+                    self.logger.debug("slave_rx: acknowledge write failed")
+
+            self.status = self.FRAME_OK
             return self.status
 
-        reg_nr = ord(self.rx_buff[4]) * 0x100 + ord(self.rx_buff[5])
+        elif fc == self.READ_ANALOG_HOLDING_REGISTERS:
+            # calculate frame wait length
+            frame_len = 8
 
-        # check if byte nb is twice register number
-        if 2*reg_nr != ord(self.rx_buff[6]):
-            self.logger.debug("slave_rx: FRAME_ERROR")
-            self.status = self.FRAME_ERROR
+            # check frame size is not too short for data volume
+            if frame_len > len(self.rx_buff):
+                self.logger.debug("FRAME_TOO_SHORT")
+                self.status = self.FRAME_TOO_SHORT
+                return self.status
+
+            # check whether frame size is too long for data volume + 3 extra bytes
+            if frame_len + self.FRAME_EXTRA_BYTE_ALLOWED < len(self.rx_buff):
+                self.logger.debug("FRAME_TOO_LONG")
+                self.status = self.FRAME_TOO_LONG
+                return self.status
+
+            # check crCalc
+            checksum = self.calc_crc_16(self.rx_buff, frame_len-2)
+            crc = 0x100 * ord(self.rx_buff[frameLength-1]) + ord(self.rx_buff[frame_len-2])
+            if crc != checksum:
+                self.logger.debug("CRC_ERROR")
+                self.status = self.CRC_ERROR
+                return self.status
+            reg_addr = 0x100 * ord(self.rx_buff[2]) + ord(self.rx_buff[3])
+            reg_nb = 0x100 * ord(self.rx_buff[4]) + ord(self.rx_buff[5])
+
+            self.logger.debug("FRAME_OK Read :" + str(reg_addr) + ":" + str(reg_nb))
+
+            # do not send ACK as there is no data to provide
+            self.status = self.FRAME_OK
             return self.status
 
-        # calculate frame wait length
-        frame_len = 2*reg_nr+9
-        if frame_len > len(self.rx_buff):
-            self.logger.debug("slave_rx: FRAME_ERROR")
-            self.status = self.FRAME_ERROR
+        else:
+            self.logger.debug("NOT_SUPPORTED_FC: >" + hex(fc) + "<")
+            self.status = self.NOT_SUPPORTED_FC
             return self.status
 
-        # check frame size
-        if (frame_len + self.FRAME_EXTRA_BYTE_ALLOWED) < len(self.rx_buff):
-            self.logger.debug("slave_rx: FRAME_ERROR")
-            self.status = self.FRAME_ERROR
-            return self.status
-
-        # check CRC
-        crc_calc = self.calc_crc_16(self.rx_buff, frame_len-2)
-        crc = 0x100 * ord(self.rx_buff[frame_len-1])+ \
-              ord(self.rx_buff[frame_len-2])
-        if crc != crc_calc:
-            self.logger.debug("slave_rx: CRC_ERROR")
-            self.status = self.CRC_ERROR
-            return self.status
-
-        # frame is correct, save values and acknowledge
-        reg_addr = 0x100 * ord(self.rx_buff[2]) + ord(self.rx_buff[3])
-        for i in range(0, reg_nr):
-            idx = reg_addr + i
-            val = 0x100 * ord(self.rx_buff[2*i+7]) + ord(self.rx_buff[2*i+8])
-            self.rx_reg.update({idx : val})
-
-        self.logger.debug("FRAME_OK")
-        self.logger.debug(self.print_r(self.rx_reg))
-        tx = self.rx_buff[0:6]
-
-        # calculate and add checksum
-        checksum = self.calc_crc_16(tx, 6)
-        tx += chr(checksum & 0xff)
-        tx += chr((checksum >> 8) & 0xff)
-        tx += chr(0) + chr(0) + chr(0)
-
-        # send acknowledge if slave address is not 0
-        if self.modbus_addr != 0:
-            result = self.conn_write(tx)
-            if result == 0:
-                self.logger.debug("slave_rx: acknowledge write failed")
-
-        self.status = self.FRAME_OK
-        return self.status
 
     """ master modbus receive method.
     """
@@ -262,10 +303,10 @@ class ModBus(object):
         tx += self.int2str(self.switch_endian(self.calc_crc_16(tx, 0))) + \
               chr(0)
 
-        # sent frame
+        # send frame
         result = self.conn_write(tx)
-
         self.logger.debug("Request: " + self.bin2hex(tx))
+
         i = 0
 
         # wait for answer frame
@@ -289,15 +330,15 @@ class ModBus(object):
         # check rough length
         if len(self.rx_buff) > self.FRAME_MAX_LENGTH or \
            len(self.rx_buff) < self.FRAME_MIN_LENGTH:
-            self.logger.debug("FRAME_ERROR: length")
-            self.status = self.FRAME_ERROR
+            self.logger.debug("FRAME_LENGTH_ERROR: length")
+            self.status = self.FRAME_LENGTH_ERROR
             return self.status
 
         # check modBus addr
         addr = ord(self.rx_buff[0])
         if addr != modbus_addr:
-            self.logger.debug("NOT_ADRESSED_TO_ME")
-            self.status = self.NOT_ADRESSED_TO_ME
+            self.logger.debug("NOT_ADDRESSED_TO_ME")
+            self.status = self.NOT_ADDRESSED_TO_ME
             return self.status
 
         # check modBus feature
@@ -314,8 +355,8 @@ class ModBus(object):
         if byte_nb != 2 * reg_nb or \
            len(self.rx_buff) < frame_len or \
            frame_len + self.FRAME_EXTRA_BYTE_ALLOWED < len(self.rx_buff):
-            self.logger.debug("FRAME_ERROR: bytes received are wrong")
-            self.status = self.FRAME_ERROR
+            self.logger.debug("FRAME_LENGTH_ERROR: bytes received are wrong")
+            self.status = self.FRAME_LENGTH_ERROR
             return self.status
 
         # check CRC
@@ -392,8 +433,8 @@ class ModBus(object):
         # check rough length
         if len(buff) > self.FRAME_MAX_LENGTH or \
            len(buff) < self.FRAME_MIN_LENGTH:
-            self.logger.debug("FRAME_ERROR")
-            self.status = self.FRAME_ERROR
+            self.logger.debug("FRAME_LENGTH_ERROR")
+            self.status = self.FRAME_LENGTH_ERROR
             return self.status
 
         # check modBus addr

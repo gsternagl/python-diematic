@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script>
+  function loading() {
+  	$('#loading').removeClass('hidden');
+  	$('#content').addClass('hidden');
+  }
+</script>
+<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" id="content">
+  {{util.flashed_messages(dismissible=True)}}
+  <h2>Diematic III Controller</h1>
+  <form action="{{ url_for('controller') }}" method=post>
+  	{{ form.csrf_token }}
+  	<table class="table table-hover table-bordered">
+	  <col width="30%">
+	  <col width="70%">
+  	  <tbody>
+	    <tr class="active">
+          <th colspan="2">Diematic Controller Information</th>
+        </tr>
+    	<tr> {{ render_field(form.ctrl_date) }} </tr>
+    	<tr> {{ render_field(form.ctrl_time) }} </tr>
+    	<tr> {{ render_field(form.ctrl_weekday) }} </tr>
+    	<tr> {{ render_field(form.temp_outside) }} </tr>
+    	<tr> {{ render_field(form.temp_ecs_meas) }} </tr>
+    	<tr> {{ render_field(form.temp_boiler_meas) }} </tr>
+    	<tr> {{ render_field(form.temp_boiler_calc) }} </tr>
+    	<tr> {{ render_field(form.mode_heating) }} </tr>
+    	<tr> {{ render_field(form.mode_ecs) }} </tr>
+    	<tr class="success">
+    	  <td> {{ form.refresh_button(class='btn btn-success', onclick='loading();') }} </td>
+    	  <td> {{ form.submit_button(class='btn btn-primary', onclick='loading();') }} </td>
+    	</tr>
+  	  </tbody>
+  	</table>
+  </form>
+</div>
+<!-- class container -->
+<div class="hidden text-center" id="loading">
+  <img id="loading-image" src="/static/loading1.gif" alt="Loading..." width="100" height="100" />
+</div>
+{% endblock %}

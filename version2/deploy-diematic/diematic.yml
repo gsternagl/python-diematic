@@ -12,8 +12,8 @@
   - name: stop starten
     service: name=nginx state=stopped
 
-  - name: stop gunicorn.socket
-    service: name=gunicorn.socket state=stopped
+  - name: stop diematic-ui.socket
+    service: name=diematic-ui.socket state=stopped
 
   - name: copy python files
     synchronize:
@@ -34,10 +34,11 @@
 
   - name: install python-libraries
     pip:
+      executable: /usr/bin/pip3
       requirements: /home/gsternag/src/python/diematic/version2/web-ui-new/requirements.txt 
 
-  - name: start gunicorn.socket
-    service: name=gunicorn.socket state=started
+  - name: start diematic-ui.socket
+    service: name=diematic-ui.socket state=started
 
   - name: nginx starten
     service: name=nginx state=started

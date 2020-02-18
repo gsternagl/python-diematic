@@ -1,0 +1,32 @@
+---
+- name: Deploy DiematicD
+  hosts: raspi1
+  remote_user: gsternag
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: test connection
+    ping:
+
+  - name: DiematicD stoppen
+    service: name=diematicd state=stopped
+
+#  - name: stop gunicorn.socket
+#    service: name=gunicorn.socket state=stopped
+
+  - name: copy python files
+    synchronize:
+        src: /Users/gsternag/Source/python/diematic/version2.1/diematicd
+        dest: /home/gsternag/src/python
+        owner: yes
+        group: yes
+        rsync_opts:
+            - "--exclude=*.pyc"
+            - "--exclude=diematicd/flask"
+ 
+#  - name: start gunicorn.socket
+#    service: name=gunicorn.socket state=started
+#
+  - name: DiematicD starten
+    service: name=diematicd state=started

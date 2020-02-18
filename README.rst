@@ -1,7 +1,7 @@
 python-diematic
 ===============
 
-*Version: 2.0beta Feb-2018*
+*Version: 2.1 Dec-2019*
 
 Goal
 ----

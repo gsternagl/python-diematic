@@ -15,9 +15,9 @@ class Diematic(object):
     slaveAddress = 0
 
     # ModBus Register Types
-    INTEGER = 1
-    REAL10 = 2
-    BIT = 3
+    REAL10 = 0
+    BIT = 1
+    INTEGER = 2
 
     # Diematic Mode
     AUTO = 8
@@ -119,25 +119,32 @@ class Diematic(object):
         # mode setting
         if self.reg_isset(self.diematicReg, 'MODE_A'):
 
-            # varying request mode
-            if self.reg_getset(self.diematicReg, 'MODE_A') != self.ANTIICE:
-                self.mod_bus.master_tx(
-                    self.regulatorAddress,
-                    self.diematicReg['MODE_A']
-                )
-                self.reg_unset(self.diematicReg, 'MODE_A')
-                self.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 0)
-                self.mod_bus.master_tx(
-                    self.regulatorAddress,
-                    self.diematicReg['NB_DAY_ANTIICE']
-                )
-                self.reg_unset(self.diematicReg, 'NB_DAY_ANTIICE')
+            if self.reg_getset(self.diematicReg, 'MODE_A') == self.ANTIICE:
+                # workaround to guarantee activation of permanent ANTIICE
+                self.mod_bus.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 1)
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['NB_DAY_ANTIICE'])
+                sleep(0.5)
+
+                # set anti-ice
+                self.mod_bus.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 0)
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['NB_DAY_ANTIICE'])
+        
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['MODE_A'])
             else:
-                self.mod_bus.master_tx(
-                    self.regulatorAddress,
-                    self.diematicReg['NB_DAY_ANTIICE']
-                )
-                self.reg_unset(self.diematicReg, 'NB_DAY_ANTIICE')
+                # update new mode + workaround for remote control update
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['MODE_A'])
+
+                self.mod_bus.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 1)
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['NB_DAY_ANTIICE'])
+        
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['MODE_A'])
+                sleep(0.5)
+
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['MODE_A'])
+
+                self.mod_bus.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 0)
+                self.mod_bus.master_tx(self.regulatorAddress, self.diematicReg['NB_DAY_ANTIICE'])
+
 
         # transmit time
         if self.reg_isset(self.diematicReg, 'HOUR') or \
@@ -312,6 +319,15 @@ class Diematic(object):
         bus_status = self.SLAVE
         silent_detection = -1
         i = 0
+        
+        # empty receive buffer
+        sleep(0.1)
+        while True:
+            self.mod_bus.slave_rx()
+            if self.mod_bus.status != ModBus.FRAME_EMPTY or self.mod_bus.status != ModBus.READ_ERROR:
+                break
+
+        self.logger.debug("Buffer empty\n")
 
         while i < 500:
             # slave mode
@@ -329,13 +345,14 @@ class Diematic(object):
                 # arm silent detection on first frame received
                 if silent_detection == -1 and \
                     (self.mod_bus.status == ModBus.FRAME_OK or \
-                     self.mod_bus.status == ModBus.NOT_SUPPORTED_FC):
+                     self.mod_bus.status == ModBus.NOT_SUPPORTED_FC or \
+                     self.mod_bus.status == ModBus.NOT_ADDRESSED_TO_ME):
                     silent_detection = 0
 
                 # update silent detection following context
                 if silent_detection >= 0:
                     if self.mod_bus.status == ModBus.FRAME_EMPTY or \
-                       self.mod_bus.status == ModBus.READ_FAILED:
+                       self.mod_bus.status == ModBus.READ_ERROR:
                         silent_detection += 1
                     else:
                         silent_detection = 0
@@ -386,8 +403,7 @@ class Diematic(object):
            mode == self.PERM_DAY or \
            mode == self.PERM_NIGHT:
 
-            self.reg_set(self.diematicReg,
-                         'MODE_A', mode & 0x2f | mode_ecs & 0x50)
+            self.reg_set(self.diematicReg, 'MODE_A', mode & 0x2f | mode_ecs & 0x50)
             self.reg_set(self.diematicReg, 'NB_DAY_ANTIICE', 0)
 
         # if the selected mode is ANTIICE, if the $nb_day_antigel value is OK
@@ -409,38 +425,27 @@ class Diematic(object):
 
     # Set temperature for circuit A
     def set_temp_a(self, day, night, anti_ice):
-        self.reg_set(self.diematicReg, 'CONS_DAY_A',
-                     (min(max(int(2 * day)    * 5, 100), 300)))
-        self.reg_set(self.diematicReg, 'CONS_NIGHT_A',
-                     (min(max(int(2 * night)  * 5, 100), 300)))
-        self.reg_set(self.diematicReg, 'CONS_ANTIICE_A',
-                     (min(max(int(2 * anti_ice)* 5, 5), 200)))
+        self.reg_set(self.diematicReg, 'CONS_DAY_A', (min(max(int(2 * day)    * 5, 100), 300)))
+        self.reg_set(self.diematicReg, 'CONS_NIGHT_A', (min(max(int(2 * night)  * 5, 100), 300)))
+        self.reg_set(self.diematicReg, 'CONS_ANTIICE_A', (min(max(int(2 * anti_ice)* 5, 5), 200)))
 
     # Set temperature for circuit B
     def set_temp_b(self, day, night, anti_ice):
-        self.reg_set(self.diematicReg, 'CONS_DAY_B',
-                     (min(max(int(2 * day) * 5, 100), 300)))
-        self.reg_set(self.diematicReg, 'CONS_NIGHT_B',
-                     (min(max(int(2 * night) * 5, 100), 300)))
-        self.reg_set(self.diematicReg, 'CONS_ANTIICE_B',
-                     (min(max(int(2 * anti_ice) * 5, 5), 200)))
+        self.reg_set(self.diematicReg, 'CONS_DAY_B', (min(max(int(2 * day) * 5, 100), 300)))
+        self.reg_set(self.diematicReg, 'CONS_NIGHT_B', (min(max(int(2 * night) * 5, 100), 300)))
+        self.reg_set(self.diematicReg, 'CONS_ANTIICE_B', (min(max(int(2 * anti_ice) * 5, 5), 200)))
 
     def set_ecs_temp(self, day, night):
-        self.reg_set(self.diematicReg, 'CONS_ECS_DAY',
-                     (min(max(int(day/5) * 50, 400), 800)))
-        self.reg_set(self.diematicReg, 'CONS_ECS_NIGHT',
-                     (min(max(int(night / 5) * 50, 100), 800)))
+        self.reg_set(self.diematicReg, 'CONS_ECS_DAY', (min(max(int(day/5) * 50, 400), 800)))
+        self.reg_set(self.diematicReg, 'CONS_ECS_NIGHT', (min(max(int(night / 5) * 50, 100), 800)))
 
     def set_steepness(self, steepness_a, steepness_b):
-        self.reg_set(self.diematicReg, 'STEEPNESS_A',
-                     (min(max(int(steepness_a * 10), 0), 40)))
-        self.reg_set(self.diematicReg, 'STEEPNESS_B',
-                     (min(max(int(steepness_b * 10), 0), 40)))
+        self.reg_set(self.diematicReg, 'STEEPNESS_A', (min(max(int(steepness_a * 10), 0), 40)))
+        self.reg_set(self.diematicReg, 'STEEPNESS_B', (min(max(int(steepness_b * 10), 0), 40)))
 
     def set_sum_win_temp(self, sum_win_temp):
         # set the temperature for Summer/Winter AUTO switch
-        self.reg_set(self.diematicReg, 'CONS_SUMWIN',
-                     (min(max(int(2 * sum_win_temp * 5), 150), 300)))
+        self.reg_set(self.diematicReg, 'CONS_SUMWIN', (min(max(int(2 * sum_win_temp * 5), 150), 300)))
 
     def set_time(self):
         # if the mode value is OK, prepare the register to be updated
@@ -456,5 +461,4 @@ class Diematic(object):
 
         self.reg_set(self.diematicReg, 'DAY', (0xff00 | today.day))
         self.reg_set(self.diematicReg, 'MONTH', (0xff00 | today.month))
-        self.reg_set(self.diematicReg, 'YEAR',
-                     (0xff00 | int(today.strftime("%y"))))
+        self.reg_set(self.diematicReg, 'YEAR', (0xff00 | int(today.strftime("%y"))))

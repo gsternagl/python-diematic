@@ -1,8 +1,0 @@
-[Unit]
-Description=gunicorn socket
-
-[Socket]
-ListenStream=/run/gunicorn/diematic.sock
-
-[Install]
-WantedBy=sockets.target

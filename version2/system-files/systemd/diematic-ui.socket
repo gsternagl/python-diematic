@@ -1,0 +1,10 @@
+[Unit]
+Description=diematic-ui gunicorn socket
+Wants=influxdb.service
+After=network.target influxdb.service
+
+[Socket]
+ListenStream=/run/gunicorn/diematic-ui.sock
+
+[Install]
+WantedBy=sockets.target

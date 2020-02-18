@@ -1,0 +1,19 @@
+[Unit]
+Description=diemantic gunicorn daemon
+Requires=diematic-ui.socket
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid-diematic-ui
+User=gsternag
+Group=gerald
+RuntimeDirectory=gunicorn
+WorkingDirectory=/home/gsternag/src/python/diematic/version2/web-ui-new
+ExecStart=/usr/local/bin/gunicorn --pid /run/gunicorn/pid \
+          --bind unix:/run/gunicorn/diematic-ui.sock run:app
+#ExecReload=/bin/kill -s HUP $MAINPID
+#ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
