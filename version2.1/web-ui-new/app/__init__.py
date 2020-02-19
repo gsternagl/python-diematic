@@ -11,6 +11,7 @@ app = Flask(__name__)
 Bootstrap(app)
 
 app.config.from_object('config')
+    
 db = SQLAlchemy(app)
 
 login_manager = LoginManager()
