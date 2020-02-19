@@ -45,3 +45,9 @@ I have recently started to work on a new app-architecture where the communicatio
 
 See in *version2/README.rst* for more information.
 
+Version 2.1
+-----------
+Created some deployment routines to roll the SW out (ansible-based).
+Upgraded everything to work with python version >= 3.8
+Updated all python packages to up-to-date versions.
+Fixed a couple of smaller bugs in ModBus library.
