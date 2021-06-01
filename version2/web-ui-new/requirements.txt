@@ -9,7 +9,7 @@ python-dateutil==2.6.1
 requests==2.18.4
 SQLAlchemy==1.2.2
 sqlalchemy-migrate==0.11.0
-urllib3==1.22
+urllib3==1.26.5
 WTForms==2.1
 gevent>=1.2.2
 numpy>=1.14.1
