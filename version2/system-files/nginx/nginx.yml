@@ -1,7 +1,7 @@
 ---
 - name: Deploy Diematic
-  hosts: gerry1
-  remote_user: gsternag
+  hosts: xxx
+  remote_user: xxx
   become: yes
   become_method: sudo
 
